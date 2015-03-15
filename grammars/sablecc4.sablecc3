@@ -110,6 +110,8 @@ Tokens
   lexer_keyword = 'Lexer';
   longest_keyword = 'Longest';
   look_keyword = 'Look';
+  lookahead_keyword = 'Lookahead';
+  lookback_keyword = 'Lookback';
   not_keyword = 'Not';
   new_keyword = 'New';
   null_keyword = 'Null';
@@ -232,7 +234,7 @@ Productions
       {or} expression bar top_expression
         {-> New expression.or(expression, bar, top_expression.expression) }
     ;
-
+	
   top_expression
         {-> expression }
     =
@@ -244,6 +246,18 @@ Productions
     |
       {look_not} concatenation look_keyword not_keyword look_expression
         {-> New expression.look_not(concatenation.expression, look_keyword, not_keyword, look_expression.expression) }
+    |
+      {lookback} concatenation lookback_keyword look_expression
+        {-> New expression.look(concatenation.expression, lookback_keyword, look_expression.expression) }
+    |
+      {lookback_not} concatenation lookback_keyword not_keyword look_expression
+        {-> New expression.look_not(concatenation.expression, lookback_keyword, not_keyword, look_expression.expression) }
+    |
+	  {lookahead} concatenation lookahead_keyword look_expression
+        {-> New expression.look(concatenation.expression, lookahead_keyword, look_expression.expression) }
+    |
+      {lookahead_not} concatenation lookahead_keyword not_keyword look_expression
+        {-> New expression.look_not(concatenation.expression, lookahead_keyword, not_keyword, look_expression.expression) }
     |
       {shortest} shortest_keyword concatenation
         {-> New expression.shortest(shortest_keyword, concatenation.expression) }
