@@ -28,7 +28,12 @@ public class RichSymbol
     /**
      * The end lookahead rich symbol.
      */
-    public static final RichSymbol END = new RichSymbol(true);
+    public static final RichSymbol END = new RichSymbol(ERychType.LookaHead);
+    
+    /**
+     * The end lookback rich symbol.
+     */
+    public static final RichSymbol START = new RichSymbol(ERychType.LookBack);
 
     /**
      * The symbol of this rich symbol.
@@ -36,9 +41,9 @@ public class RichSymbol
     private final Symbol symbol;
 
     /**
-     * The lookahead status of this rich symbol.
+     * The status of this rich symbol.
      */
-    private final boolean isLookahead;
+    private final ERychType type;
 
     /**
      * The cached hash code of this rich symbol. It is <code>null</code> when
@@ -56,10 +61,10 @@ public class RichSymbol
      * Constructs a constant rich symbol. Serves to construct END.
      */
     private RichSymbol(
-            boolean isLookahead) {
+            ERychType type) {
 
         this.symbol = null;
-        this.isLookahead = isLookahead;
+        this.type = type;
     }
 
     /**
@@ -67,14 +72,14 @@ public class RichSymbol
      */
     RichSymbol(
             Symbol symbol,
-            boolean isLookahead) {
+            ERychType type) {
 
         if (symbol == null) {
             throw new InternalException("symbol may not be null");
         }
 
         this.symbol = symbol;
-        this.isLookahead = isLookahead;
+        this.type = type;
     }
 
     /**
@@ -90,7 +95,17 @@ public class RichSymbol
      */
     public boolean isLookahead() {
 
-        return this.isLookahead;
+        return this.type == ERychType.LookaHead;
+    }
+    
+    public boolean isLookback() {
+    	
+    	return this.type == ERychType.LookBack;
+    }
+    
+    public boolean isNormal() {
+    	
+    	return this.type == ERychType.Normal;
     }
 
     /**
@@ -115,7 +130,7 @@ public class RichSymbol
 
         RichSymbol richSymbol = (RichSymbol) obj;
 
-        if (this.isLookahead != richSymbol.isLookahead) {
+        if (this.type != richSymbol.type) {
             return false;
         }
 
@@ -130,16 +145,25 @@ public class RichSymbol
 
         if (this.hashCode == null) {
             int hashCode = this.symbol.hashCode();
-
-            if (this.isLookahead) {
-                hashCode *= 109;
-            }
+            
+            switch (this.type) {
+			case LookBack:
+				hashCode *= 109;
+				break;
+			case Normal:
+				hashCode *= 110;
+				break;
+			case LookaHead:
+				hashCode *= 111;
+				break;
+			}
 
             this.hashCode = hashCode;
         }
 
         return this.hashCode;
     }
+//    
 
     /**
      * Returns the string representation of this rich symbol.
@@ -152,7 +176,7 @@ public class RichSymbol
 
             if (this.symbol != null) {
                 sb.append("{");
-                sb.append(this.isLookahead ? "lookahead" : "normal");
+                sb.append(this.type.toString());
                 sb.append(",");
                 sb.append(this.symbol);
                 sb.append("}");
@@ -177,8 +201,9 @@ public class RichSymbol
             throw new InternalException("richSymbol may not be null");
         }
 
-        if (this.isLookahead != richSymbol.isLookahead) {
-            return this.isLookahead ? 1 : -1;
+        if (this.type != richSymbol.type) {
+        	//TODO: wtf ?
+//            return this.isLookahead ? 1 : -1;
         }
 
         if (this.symbol == null) {

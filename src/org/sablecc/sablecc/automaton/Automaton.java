@@ -933,10 +933,48 @@ public final class Automaton {
         return nTimesWithSeparator(automaton, n).concat(tailAutomaton);
     }
 
-    public Automaton look(
-            Automaton automaton) {
-
-        if (!this.isStable) {
+//    public Automaton look(
+//            Automaton automaton) {
+//
+//        if (!this.isStable) {
+//            throw new InternalException("this automaton is not yet stable");
+//        }
+//
+//        if (automaton == null) {
+//            throw new InternalException("automaton may not be null");
+//        }
+//
+//        if (!automaton.isStable) {
+//            throw new InternalException("automaton is not yet stable");
+//        }
+//
+//        return new LookOperation(this, automaton).getNewAutomaton();
+//    }
+//
+//    public Automaton lookNot(
+//            Automaton automaton) {
+//
+//        if (!this.isStable) {
+//            throw new InternalException("this automaton is not yet stable");
+//        }
+//
+//        if (automaton == null) {
+//            throw new InternalException("automaton may not be null");
+//        }
+//
+//        if (!automaton.isStable) {
+//            throw new InternalException("automaton is not yet stable");
+//        }
+//
+//        Automaton lookAutomaton = getEpsilonLookAnyStarEnd().diff(
+//                getEpsilonLookAnyStarEnd().look(automaton));
+//        return look(lookAutomaton);
+//    }
+    
+    public Automaton lookaHead(
+    		Automaton automaton){
+    	
+    	if (!this.isStable) {
             throw new InternalException("this automaton is not yet stable");
         }
 
@@ -947,14 +985,14 @@ public final class Automaton {
         if (!automaton.isStable) {
             throw new InternalException("automaton is not yet stable");
         }
-
-        return new LookOperation(this, automaton).getNewAutomaton();
+        
+        return new LookaHeadOperation(this, automaton).getNewAutomaton();
     }
-
-    public Automaton lookNot(
-            Automaton automaton) {
-
-        if (!this.isStable) {
+    
+    public Automaton lookBack(
+    		Automaton automaton){
+    	
+    	if (!this.isStable) {
             throw new InternalException("this automaton is not yet stable");
         }
 
@@ -965,10 +1003,8 @@ public final class Automaton {
         if (!automaton.isStable) {
             throw new InternalException("automaton is not yet stable");
         }
-
-        Automaton lookAutomaton = getEpsilonLookAnyStarEnd().diff(
-                getEpsilonLookAnyStarEnd().look(automaton));
-        return look(lookAutomaton);
+        
+        return new LookBackOperation(this, automaton).getNewAutomaton();
     }
 
     public Automaton diff(

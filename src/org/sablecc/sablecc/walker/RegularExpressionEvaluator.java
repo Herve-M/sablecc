@@ -355,22 +355,52 @@ public class RegularExpressionEvaluator
         save(node, expression.shortest());
     }
 
+//    @Override
+//    public void outALookNotExpression(
+//            ALookNotExpression node) {
+//
+//        Automaton left = retrieve(node.getLeft());
+//        Automaton right = retrieve(node.getRight());
+//        save(node, left.lookNot(right));
+//    }
+//
+//    @Override
+//    public void outALookExpression(
+//            ALookExpression node) {
+//
+//        Automaton left = retrieve(node.getLeft());
+//        Automaton right = retrieve(node.getRight());
+//        save(node, left.look(right));
+//    }
+    
     @Override
-    public void outALookNotExpression(
-            ALookNotExpression node) {
-
-        Automaton left = retrieve(node.getLeft());
+    public void outALookaheadExpression(
+    		ALookaheadExpression node) {
+    	Automaton left = retrieve(node.getLeft());
         Automaton right = retrieve(node.getRight());
-        save(node, left.lookNot(right));
+        save(node, left.lookaHead(right));
     }
-
+    
     @Override
-    public void outALookExpression(
-            ALookExpression node) {
-
-        Automaton left = retrieve(node.getLeft());
+    public void outALookaheadNotExpression(
+    		ALookaheadNotExpression node) {
+    	Automaton left = retrieve(node.getLeft());
         Automaton right = retrieve(node.getRight());
-        save(node, left.look(right));
+    }
+    
+    @Override
+    public void outALookbackExpression(
+    		ALookbackExpression node) {
+    	Automaton left = retrieve(node.getLeft());
+        Automaton right = retrieve(node.getRight());
+        save(node, right.lookBack(left));
+    }
+    
+    @Override
+    public void outALookbackNotExpression(
+    		ALookbackNotExpression node) {
+    	Automaton left = retrieve(node.getLeft());
+        Automaton right = retrieve(node.getRight());
     }
 
     @Override

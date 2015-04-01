@@ -32,16 +32,21 @@ public class Symbol
      * symbol.
      */
     private final SortedSet<Interval> intervals;
+    
+    /**
+     * The lookback rich symbol associated with this symbol.
+     */
+    private final RichSymbol lookbackRichSymbol = new RichSymbol(this, ERychType.LookBack);
 
     /**
      * The normal rich symbol associated with this symbol.
      */
-    private final RichSymbol normalRichSymbol = new RichSymbol(this, false);
+    private final RichSymbol normalRichSymbol = new RichSymbol(this, ERychType.Normal);
 
     /**
      * The lookahead rich symbol associated with this symbol.
      */
-    private final RichSymbol lookaheadRichSymbol = new RichSymbol(this, true);
+    private final RichSymbol lookaheadRichSymbol = new RichSymbol(this, ERychType.LookaHead);
 
     /**
      * The cached hash code of this symbol. It is <code>null</code> when not yet
@@ -188,6 +193,11 @@ public class Symbol
     public RichSymbol getLookaheadRichSymbol() {
 
         return this.lookaheadRichSymbol;
+    }
+    
+    public RichSymbol getLookbackRichSymbol() {
+    	
+    	return this.lookbackRichSymbol;
     }
 
     /**
