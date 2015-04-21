@@ -128,7 +128,7 @@ class SubtractOperation {
         rejectAutomaton.stabilize();
 
         Symbol any = new Symbol(new Interval(Bound.MIN, Bound.MAX));
-        Automaton anyStar = Automaton.getSymbolLookAnyStarEnd(any).zeroOrMore();
+        Automaton anyStar = Automaton.getSymbol(any).zeroOrMore();
 
         return anyStar.concat(rejectAutomaton);
     }

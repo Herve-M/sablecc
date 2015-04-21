@@ -108,14 +108,14 @@ public class RegularExpressionEvaluator
     public void outAEndExpression(
             AEndExpression node) {
 
-        save(node, Automaton.getEpsilonLookEnd());
+        save(node, Automaton.getEnd());
     }
 
     @Override
     public void outAAnyExpression(
             AAnyExpression node) {
 
-        save(node, Automaton.getSymbolLookAnyStarEnd(new Symbol(new Interval(
+        save(node, Automaton.getSymbol(new Symbol(new Interval(
                 Bound.MIN, Bound.MAX))));
     }
 
@@ -123,7 +123,7 @@ public class RegularExpressionEvaluator
     public void outAIntervalExpression(
             AIntervalExpression node) {
 
-        save(node, Automaton.getSymbolLookAnyStarEnd(new Symbol(new Interval(
+        save(node, Automaton.getSymbol(new Symbol(new Interval(
                 retrieve(node.getFrom()), retrieve(node.getTo())))));
     }
 
@@ -131,7 +131,7 @@ public class RegularExpressionEvaluator
     public void outAHexExpression(
             AHexExpression node) {
 
-        save(node, Automaton.getSymbolLookAnyStarEnd(new Symbol(node
+        save(node, Automaton.getSymbol(new Symbol(node
                 .getHexChar().getText().substring(2), 16)));
     }
 
@@ -139,7 +139,7 @@ public class RegularExpressionEvaluator
     public void outADecExpression(
             ADecExpression node) {
 
-        save(node, Automaton.getSymbolLookAnyStarEnd(new Symbol(node
+        save(node, Automaton.getSymbol(new Symbol(node
                 .getDecChar().getText().substring(1))));
     }
 
@@ -147,7 +147,7 @@ public class RegularExpressionEvaluator
     public void outAEpsilonExpression(
             AEpsilonExpression node) {
 
-        save(node, Automaton.getEpsilonLookAnyStarEnd());
+        save(node, Automaton.getAnyEnd());
     }
 
     @Override
@@ -160,7 +160,7 @@ public class RegularExpressionEvaluator
             c = charText.charAt(2);
         }
 
-        save(node, Automaton.getSymbolLookAnyStarEnd(new Symbol(c)));
+        save(node, Automaton.getSymbol(new Symbol(c)));
     }
 
     @Override
@@ -187,11 +187,11 @@ public class RegularExpressionEvaluator
             }
 
             if (automaton == null) {
-                automaton = Automaton.getSymbolLookAnyStarEnd(new Symbol(c));
+                automaton = Automaton.getSymbol(new Symbol(c));
             }
             else {
                 automaton = automaton.concat(Automaton
-                        .getSymbolLookAnyStarEnd(new Symbol(c)));
+                        .getSymbol(new Symbol(c)));
             }
         }
 

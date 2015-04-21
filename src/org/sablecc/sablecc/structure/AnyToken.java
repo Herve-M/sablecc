@@ -48,7 +48,7 @@ public class AnyToken
         Automaton automaton = this.automaton;
 
         if (automaton == null) {
-            automaton = Automaton.getSymbolLookAnyStarEnd(new Symbol(
+            automaton = Automaton.getSymbol(new Symbol(
                     new Interval(Bound.MIN, Bound.MAX)));
             automaton = automaton.accept(getAcceptation()).minimal();
             this.automaton = automaton;

@@ -58,7 +58,7 @@ public class RichSymbol
     private String toString;
 
     /**
-     * Constructs a constant rich symbol. Serves to construct END.
+     * Constructs a constant rich symbol. Serves to construct START or END.
      */
     private RichSymbol(
             ERychType type) {
@@ -182,7 +182,12 @@ public class RichSymbol
                 sb.append("}");
             }
             else {
-                sb.append("{lookahead,END}");
+            	if(type == ERychType.LookBack){
+            		sb.append("{"+type+",START}");
+            	}
+            	else {
+            		sb.append("{"+type+",END}");
+            	}                
             }
 
             this.toString = sb.toString();
@@ -201,10 +206,9 @@ public class RichSymbol
             throw new InternalException("richSymbol may not be null");
         }
 
-        if (this.type != richSymbol.type) {
-        	//TODO: wtf ?
-//            return this.isLookahead ? 1 : -1;
-        }
+        if (this.isLookahead() != richSymbol.isLookahead()) {
+        	return this.isLookahead() ? 1 : -1;
+    	}
 
         if (this.symbol == null) {
             return richSymbol.symbol == null ? 0 : 1;

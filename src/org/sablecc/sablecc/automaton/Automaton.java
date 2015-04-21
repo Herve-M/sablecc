@@ -704,7 +704,7 @@ public final class Automaton {
             throw new InternalException("this automaton is not yet stable");
         }
 
-        return or(getEpsilonLookAnyStarEnd());
+        return or(getAnyEnd());
     }
 
     public Automaton oneOrMore() {
@@ -773,7 +773,7 @@ public final class Automaton {
         }
 
         if (n.compareTo(ZERO) == 0) {
-            return getEpsilonLookAnyStarEnd();
+            return getAnyEnd();
         }
 
         Automaton newAutomaton = this;
@@ -805,7 +805,7 @@ public final class Automaton {
         }
 
         if (n.compareTo(ZERO) == 0) {
-            return getEpsilonLookAnyStarEnd();
+            return getAnyEnd();
         }
 
         if (n.compareTo(ONE) == 0) {
@@ -876,7 +876,7 @@ public final class Automaton {
             throw new InternalException("m may not be smaller than n");
         }
 
-        Automaton tailAutomaton = getEpsilonLookAnyStarEnd();
+        Automaton tailAutomaton = getAnyEnd();
 
         for (BigInteger i = n; i.compareTo(m) < 0; i = i.add(ONE)) {
             tailAutomaton = tailAutomaton.concat(this).zeroOrOne();
@@ -914,7 +914,7 @@ public final class Automaton {
             return nTimesWithSeparator(automaton, n);
         }
 
-        Automaton tailAutomaton = getEpsilonLookAnyStarEnd();
+        Automaton tailAutomaton = getAnyEnd();
 
         if (n.compareTo(ZERO) == 0) {
             for (BigInteger i = ONE; i.compareTo(m) < 0; i = i.add(ONE)) {
@@ -1169,8 +1169,33 @@ public final class Automaton {
 
         return new WithMarkersOperation(this).getNewAutomaton();
     }
+    
+    public static Automaton getEpsilon(){
+    	Symbol any = new Symbol(new Interval(Bound.MIN, Bound.MAX));
+    	Alphabet alphabet = new Alphabet(any);
+    	Automaton automaton = new Automaton(alphabet);
+    	
+    	State startState = automaton.startState;
+    	State secondState = new State(automaton);
+    	State thirdState = new State(automaton);
+    	State endState = new State(automaton);
+    	
+    	startState.addTransition(RichSymbol.START, secondState);
+    	secondState.addTransition(any.getLookbackRichSymbol(), secondState);
+    	secondState.addTransition(RichSymbol.END, endState);
+    	secondState.addTransition(any.getLookaheadRichSymbol(), thirdState);
+    	thirdState.addTransition(any.getLookaheadRichSymbol(), thirdState);
+    	thirdState.addTransition(RichSymbol.END, endState);
+    	
+    	automaton.addAcceptation(Acceptation.ACCEPT);
+    	endState.addAcceptation(Acceptation.ACCEPT);
+    	
+    	automaton.stabilize();
+    	
+    	return automaton;
+    }
 
-    public static Automaton getEpsilonLookAnyStarEnd() {
+    public static Automaton getAnyEnd() {
 
         Symbol any = new Symbol(new Interval(Bound.MIN, Bound.MAX));
         Alphabet alphabet = new Alphabet(any);
@@ -1190,7 +1215,7 @@ public final class Automaton {
         return automaton;
     }
 
-    public static Automaton getSymbolLookAnyStarEnd(
+    public static Automaton getSymbol(
             Symbol symbol) {
 
         if (symbol == null) {
@@ -1207,18 +1232,21 @@ public final class Automaton {
         Automaton automaton = new Automaton(alphabet);
 
         State start = automaton.startState;
-        State middle = new State(automaton);
+        State startAny = new State(automaton);
+        State endAny = new State(automaton);
         State end = new State(automaton);
 
         for (Symbol newSymbol : alphabetMergeResult.getNewSymbols(symbol)) {
-            start.addTransition(newSymbol.getNormalRichSymbol(), middle);
+        	startAny.addTransition(newSymbol.getNormalRichSymbol(), endAny);
         }
 
         for (Symbol newSymbol : alphabetMergeResult.getNewSymbols(any)) {
-            middle.addTransition(newSymbol.getLookaheadRichSymbol(), middle);
+        	startAny.addTransition(newSymbol.getLookbackRichSymbol(), startAny);
+        	endAny.addTransition(newSymbol.getLookaheadRichSymbol(), endAny);
         }
 
-        middle.addTransition(RichSymbol.END, end);
+        start.addTransition(RichSymbol.START, startAny);
+        endAny.addTransition(RichSymbol.END, end);
 
         automaton.addAcceptation(Acceptation.ACCEPT);
         end.addAcceptation(Acceptation.ACCEPT);
@@ -1228,7 +1256,7 @@ public final class Automaton {
         return automaton;
     }
 
-    public static Automaton getEpsilonLookEnd() {
+    public static Automaton getEnd() {
 
         Alphabet alphabet = new Alphabet();
         Automaton automaton = new Automaton(alphabet);
@@ -1245,8 +1273,26 @@ public final class Automaton {
 
         return automaton;
     }
+    
+    public static Automaton getStart() {
 
-    public static Automaton getEmptyAutomaton() {
+        Alphabet alphabet = new Alphabet();
+        Automaton automaton = new Automaton(alphabet);
+
+        State start = automaton.startState;
+        State end = new State(automaton);
+
+        start.addTransition(RichSymbol.START, end);
+
+        automaton.addAcceptation(Acceptation.ACCEPT);
+        end.addAcceptation(Acceptation.ACCEPT);
+
+        automaton.stabilize();
+
+        return automaton;
+    }
+
+    public static Automaton getEmpty() {
 
         Automaton automaton = new Automaton(new Alphabet());
         automaton.stabilize();

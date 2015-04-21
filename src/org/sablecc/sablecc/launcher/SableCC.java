@@ -395,7 +395,7 @@ public class SableCC {
         }
 
         Context context = globalIndex.getContexts().iterator().next();
-        Automaton lexerAutomaton = Automaton.getEmptyAutomaton();
+        Automaton lexerAutomaton = Automaton.getEmpty();
 
         for (MatchedToken matchedToken : context.getMatchedTokens()) {
             lexerAutomaton = lexerAutomaton.or(matchedToken.getAutomaton());

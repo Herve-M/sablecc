@@ -48,7 +48,7 @@ public class DecToken
         Automaton automaton = this.automaton;
 
         if (automaton == null) {
-            automaton = Automaton.getSymbolLookAnyStarEnd(new Symbol(
+            automaton = Automaton.getSymbol(new Symbol(
                     this.declaration.getText().substring(1)));
             automaton = automaton.accept(getAcceptation()).minimal();
             this.automaton = automaton;

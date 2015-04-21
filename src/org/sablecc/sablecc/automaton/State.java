@@ -326,6 +326,7 @@ public final class State
 
         if (richSymbol != null
                 && richSymbol != RichSymbol.END
+                && richSymbol != RichSymbol.START
                 && !this.automaton.getAlphabet().getSymbols().contains(
                         richSymbol.getSymbol())) {
             throw new InternalException("invalid symbol");

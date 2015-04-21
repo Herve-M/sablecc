@@ -52,7 +52,7 @@ public class CharToken
             if (c == '\\') {
                 c = this.declaration.getText().charAt(2);
             }
-            automaton = Automaton.getSymbolLookAnyStarEnd(new Symbol(c));
+            automaton = Automaton.getSymbol(new Symbol(c));
             automaton = automaton.accept(getAcceptation()).minimal();
             this.automaton = automaton;
         }

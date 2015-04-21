@@ -69,11 +69,11 @@ public class StringToken
 
                 if (automaton == null) {
                     automaton = Automaton
-                            .getSymbolLookAnyStarEnd(new Symbol(c));
+                            .getSymbol(new Symbol(c));
                 }
                 else {
                     automaton = automaton.concat(Automaton
-                            .getSymbolLookAnyStarEnd(new Symbol(c)));
+                            .getSymbol(new Symbol(c)));
                 }
             }
 

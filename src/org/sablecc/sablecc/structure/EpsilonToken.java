@@ -47,7 +47,7 @@ public class EpsilonToken
         Automaton automaton = this.automaton;
 
         if (automaton == null) {
-            automaton = Automaton.getEpsilonLookAnyStarEnd();
+            automaton = Automaton.getAnyEnd();
             automaton = automaton.accept(getAcceptation()).minimal();
             this.automaton = automaton;
         }
