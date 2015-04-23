@@ -424,6 +424,21 @@ public final class Automaton {
 
         return false;
     }
+    
+    public boolean hasStartTransition() {
+
+        if (!this.isStable) {
+            throw new InternalException("this automaton is not yet stable");
+        }
+
+        for (State state : this.states) {
+            if (state.getTransitions().containsKey(RichSymbol.START)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     public boolean hasEndTransition() {
 
@@ -1235,14 +1250,14 @@ public final class Automaton {
         State startAny = new State(automaton);
         State endAny = new State(automaton);
         State end = new State(automaton);
-
-        for (Symbol newSymbol : alphabetMergeResult.getNewSymbols(symbol)) {
+        
+        for (Symbol newSymbol : alphabetMergeResult.getNewSymbols(symbol)) {        	
         	startAny.addTransition(newSymbol.getNormalRichSymbol(), endAny);
         }
 
         for (Symbol newSymbol : alphabetMergeResult.getNewSymbols(any)) {
-        	startAny.addTransition(newSymbol.getLookbackRichSymbol(), startAny);
-        	endAny.addTransition(newSymbol.getLookaheadRichSymbol(), endAny);
+    		startAny.addTransition(newSymbol.getLookbackRichSymbol(), startAny);
+        	endAny.addTransition(newSymbol.getLookaheadRichSymbol(), endAny);        		      	
         }
 
         start.addTransition(RichSymbol.START, startAny);

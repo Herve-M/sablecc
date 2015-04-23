@@ -104,24 +104,33 @@ public final class AlphabetMergeResult {
             RichSymbol oldNormalRichSymbol = oldSymbol.getNormalRichSymbol();
             RichSymbol oldLookaheadRichSymbol = oldSymbol
                     .getLookaheadRichSymbol();
+            RichSymbol oldLookBackRichSymbol = oldSymbol.getLookbackRichSymbol();
 
             SortedSet<RichSymbol> newNormalRichSymbols = new TreeSet<RichSymbol>();
             SortedSet<RichSymbol> newLookaheadRichSymbols = new TreeSet<RichSymbol>();
+            SortedSet<RichSymbol> newLookBackRichSymbols = new TreeSet<RichSymbol>();
 
             for (Symbol newSymbol : newSymbols) {
                 newNormalRichSymbols.add(newSymbol.getNormalRichSymbol());
                 newLookaheadRichSymbols.add(newSymbol.getLookaheadRichSymbol());
+                newLookBackRichSymbols.add(newSymbol.getLookbackRichSymbol());
             }
 
             this.mergedAlphabetRichSymbolMap.put(oldNormalRichSymbol,
                     newNormalRichSymbols);
             this.mergedAlphabetRichSymbolMap.put(oldLookaheadRichSymbol,
                     newLookaheadRichSymbols);
+            this.mergedAlphabetRichSymbolMap.put(oldLookBackRichSymbol, 
+            		newLookBackRichSymbols);
         }
+        
+        SortedSet<RichSymbol> newStartRichSymbols = new TreeSet<RichSymbol>();
+        newStartRichSymbols.add(RichSymbol.START);
 
         SortedSet<RichSymbol> newEndRichSymbols = new TreeSet<RichSymbol>();
         newEndRichSymbols.add(RichSymbol.END);
-
+        
+        this.mergedAlphabetRichSymbolMap.put(RichSymbol.START, newStartRichSymbols);
         this.mergedAlphabetRichSymbolMap.put(RichSymbol.END, newEndRichSymbols);
     }
 
