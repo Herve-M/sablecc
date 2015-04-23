@@ -206,9 +206,9 @@ public class RichSymbol
             throw new InternalException("richSymbol may not be null");
         }
 
-        if (this.isLookahead() != richSymbol.isLookahead()) {
-        	return this.isLookahead() ? 1 : -1;
-    	}
+        if(this.type != richSymbol.type){
+    		return this.isLookahead() ? 1 : -1;  
+        }  
 
         if (this.symbol == null) {
             return richSymbol.symbol == null ? 0 : 1;
