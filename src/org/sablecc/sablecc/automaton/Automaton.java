@@ -1313,6 +1313,128 @@ public final class Automaton {
         automaton.stabilize();
         return automaton;
     }
+    
+    //TODEL
+	public static Automaton getAEpsilon() {
+
+		Symbol symbol = new Symbol('a');
+		Symbol any = new Symbol(new Interval(Bound.MIN, Bound.MAX));
+		Alphabet anyAlphabet = new Alphabet(any);
+		Alphabet symbolAlphabet = new Alphabet(symbol);
+
+		AlphabetMergeResult alphabetMergeResult = anyAlphabet
+				.mergeWith(symbolAlphabet);
+		Alphabet alphabet = alphabetMergeResult.getNewAlphabet();
+		Automaton automaton = new Automaton(alphabet);
+
+		State start = automaton.startState;
+		State startAny = new State(automaton);
+		State endAny = new State(automaton);
+		State end = new State(automaton);
+
+		for (Symbol newSymbol : alphabetMergeResult.getNewSymbols(symbol)) {
+			startAny.addTransition(newSymbol.getNormalRichSymbol(), endAny);
+		}
+		
+		startAny.addTransition(null, endAny);
+
+		for (Symbol newSymbol : alphabetMergeResult.getNewSymbols(any)) {
+			startAny.addTransition(newSymbol.getLookbackRichSymbol(), startAny);
+			endAny.addTransition(newSymbol.getLookaheadRichSymbol(), endAny);
+		}
+
+		start.addTransition(RichSymbol.START, startAny);
+		endAny.addTransition(RichSymbol.END, end);
+
+		automaton.addAcceptation(Acceptation.ACCEPT);
+		end.addAcceptation(Acceptation.ACCEPT);
+
+		automaton.stabilize();
+
+		return automaton;
+	}
+	
+	//TODEL
+	public static Automaton getComplicatedAutomaton() {
+		Symbol symbolA = new Symbol('a');
+		Symbol symbolB = new Symbol('b');
+		Symbol symbolC = new Symbol('c');
+		Symbol symbolAny = new Symbol(new Interval(Bound.MIN, Bound.MAX));
+		
+		List<Symbol> symbols = new ArrayList<Symbol>();
+		symbols.add(symbolA);
+		symbols.add(symbolB);
+		symbols.add(symbolC);
+
+		Alphabet symbolAlphabet = new Alphabet(symbols);
+		Alphabet anyAlphabet = new Alphabet(symbolAny);
+		
+		AlphabetMergeResult alphabetMergeResult = anyAlphabet
+				.mergeWith(symbolAlphabet);
+		Alphabet alphabet = alphabetMergeResult.getNewAlphabet();
+		Automaton automaton = new Automaton(alphabet);
+		
+		
+
+		State s1 = automaton.startState;
+		State s2 = new State(automaton);
+		State s3 = new State(automaton);
+		State s4 = new State(automaton);
+		State s5 = new State(automaton);
+		State s6 = new State(automaton);
+		State s7 = new State(automaton);
+		State s8 = new State(automaton);
+		State s9 = new State(automaton);
+		State s10 = new State(automaton);
+		
+		for (Symbol newSymbol : alphabetMergeResult.getNewSymbols(symbolA)) {
+			s2.addTransition(newSymbol.getLookbackRichSymbol(), s3);
+			s3.addTransition(newSymbol.getNormalRichSymbol(), s4);
+			s4.addTransition(newSymbol.getNormalRichSymbol(), s4);
+			s4.addTransition(newSymbol.getLookaheadRichSymbol(), s5);
+			s5.addTransition(newSymbol.getLookaheadRichSymbol(), s9);
+		}
+		
+		for (Symbol newSymbol : alphabetMergeResult.getNewSymbols(symbolB)) {
+			s2.addTransition(newSymbol.getLookbackRichSymbol(), s6);
+			s6.addTransition(newSymbol.getNormalRichSymbol(), s7);
+			s7.addTransition(newSymbol.getLookbackRichSymbol(), s8);
+			s8.addTransition(newSymbol.getLookbackRichSymbol(), s9);
+		}
+		
+		for (Symbol newSymbol : alphabetMergeResult.getNewSymbols(symbolC)) {
+			s2.addTransition(newSymbol.getLookbackRichSymbol(), s2);
+		}
+		
+		for (Symbol newSymbol : alphabetMergeResult.getNewSymbols(symbolAny)) {
+			s9.addTransition(newSymbol.getLookaheadRichSymbol(), s9);
+		}
+
+		s1.addTransition(RichSymbol.START, s2);
+//		//2
+//		s2.addTransition(symbolC.getLookbackRichSymbol(), s2);
+//		s2.addTransition(symbolA.getLookbackRichSymbol(), s3);
+//		s2.addTransition(symbolB.getLookbackRichSymbol(), s6);
+//		//3 and 
+//		s3.addTransition(symbolA.getNormalRichSymbol(), s4);
+//		s4.addTransition(symbolA.getNormalRichSymbol(), s4);
+//		s4.addTransition(symbolA.getLookaheadRichSymbol(), s5);
+//		s5.addTransition(symbolA.getLookaheadRichSymbol(), s9);
+//		//6 and down
+//		s6.addTransition(symbolB.getNormalRichSymbol(), s7);
+//		s7.addTransition(symbolB.getLookbackRichSymbol(), s8);
+//		s8.addTransition(symbolB.getLookbackRichSymbol(), s9);
+//		//END
+//		s9.addTransition(symbolAny.getLookaheadRichSymbol(), s9);
+		s9.addTransition(RichSymbol.END, s10);
+
+		automaton.addAcceptation(Acceptation.ACCEPT);
+		s10.addAcceptation(Acceptation.ACCEPT);
+
+		automaton.stabilize();
+
+		return automaton;
+	}
 
     /**
      * Returns a comparator for rich symbols which can handle epsilon (null)

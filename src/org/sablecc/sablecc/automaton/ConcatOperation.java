@@ -18,6 +18,7 @@
 package org.sablecc.sablecc.automaton;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 import org.sablecc.exception.*;
 import org.sablecc.sablecc.alphabet.*;
@@ -69,8 +70,9 @@ class ConcatOperation {
             throw new InternalException("invalid operation");
         }
 
-        leftAutomaton = leftAutomaton.minimal();
-        rightAutomaton = rightAutomaton.minimal();
+        //TODO : change to minimal when it's ready for 3 colors auto.
+        leftAutomaton = leftAutomaton.deterministic();
+        rightAutomaton = rightAutomaton.deterministic();
 
         this.alphabetMergeResult = leftAutomaton.getAlphabet().mergeWith(
                 rightAutomaton.getAlphabet());
@@ -83,104 +85,143 @@ class ConcatOperation {
                 .withMergedAlphabet(this.alphabetMergeResult);
 
         this.newAutomaton.addAcceptation(Acceptation.ACCEPT);
-
-        Set<Pair<State, State>> rightProgress = new LinkedHashSet<Pair<State, State>>();
-        rightProgress.add(new Pair<State, State>(this.rightAutomaton
-                .getStartState(), this.leftAutomaton.getStartState()));
-        Pair<State, Set<Pair<State, State>>> progress = new Pair<State, Set<Pair<State, State>>>(
-                this.leftAutomaton.getStartState(), rightProgress);
-
-        this.workSet = new WorkSet<State>();
-
-        this.stateMap.put(progress, this.newAutomaton.getStartState());
-        this.progressMap.put(this.newAutomaton.getStartState(), progress);
-        this.workSet.add(this.newAutomaton.getStartState());
-
-        while (this.workSet.hasNext()) {
-            State state = this.workSet.next();
-
-            for (Pair<State, State> rightProgressPair : this.progressMap.get(
-                    state).getRight()) {
-                if (rightProgressPair.getLeft().isAcceptState()
-                        && rightProgressPair.getRight().isAcceptState()) {
-                    state.addAcceptation(Acceptation.ACCEPT);
-                    break;
-                }
-            }
-
-            for (Symbol symbol : this.newAlphabet.getSymbols()) {
-                addTransition(state, symbol.getNormalRichSymbol());
-                addTransition(state, symbol.getLookaheadRichSymbol());
-            }
-            addTransition(state, RichSymbol.END);
-        }
+        
+		Set<Pair<State, State>> rightProgress = new LinkedHashSet<Pair<State, State>>();
+		rightProgress.add(new Pair<State, State>(this.rightAutomaton
+				.getStartState(), this.leftAutomaton.getStartState()));
+		Pair<State, Set<Pair<State, State>>> progress = new Pair<State, Set<Pair<State, State>>>(
+				this.leftAutomaton.getStartState(), rightProgress);
+		
+		this.workSet = new WorkSet<State>();
+		this.stateMap.put(progress, this.newAutomaton.getStartState());
+		this.progressMap.put(this.newAutomaton.getStartState(), progress);
+		this.workSet.add(this.newAutomaton.getStartState());
+		
+		while (this.workSet.hasNext()) {
+			State state = this.workSet.next();
+			
+			for (Pair<State, State> rightProgressPair : this.progressMap.get(
+					state).getRight()) {
+				if (rightProgressPair.getLeft().isAcceptState()
+						&& rightProgressPair.getRight().isAcceptState()) {
+					state.addAcceptation(Acceptation.ACCEPT);
+					break;
+				}
+			}
+			addTransition(state, RichSymbol.START);
+			for (Symbol symbol : this.newAlphabet.getSymbols()) {
+				addTransition(state, symbol.getLookbackRichSymbol());
+				addTransition(state, symbol.getNormalRichSymbol());
+				addTransition(state, symbol.getLookaheadRichSymbol());				
+			}
+			addTransition(state, RichSymbol.END);
+		}
 
         this.newAutomaton.stabilize();
     }
-
-    private void addTransition(
-            State sourceState,
-            RichSymbol richSymbol) {
-
-        Pair<State, Set<Pair<State, State>>> sourceProgress = this.progressMap
-                .get(sourceState);
-
-        State leftSourceState = sourceProgress.getLeft();
-        State leftTargetState;
-
-        if (leftSourceState == null || richSymbol.isLookahead()) {
-            leftTargetState = null;
-        }
-        else {
-            leftTargetState = leftSourceState.getSingleTarget(richSymbol);
-        }
-
-        Set<Pair<State, State>> rightSourceProgress = sourceProgress.getRight();
-        Set<Pair<State, State>> rightTargetProgress = new LinkedHashSet<Pair<State, State>>();
-
-        if (leftTargetState != null) {
-            rightTargetProgress.add(new Pair<State, State>(this.rightAutomaton
-                    .getStartState(), leftTargetState));
-        }
-
-        for (Pair<State, State> sourcePair : rightSourceProgress) {
-            State rightSourceState = sourcePair.getLeft();
-            State conditionSourceState = sourcePair.getRight();
-
-            State rightTargetState = rightSourceState
-                    .getSingleTarget(richSymbol);
-            State conditionTargetState;
-
-            if (richSymbol.isLookahead()) {
-                conditionTargetState = conditionSourceState
-                        .getSingleTarget(richSymbol);
-            }
-            else {
-                conditionTargetState = conditionSourceState
-                        .getSingleTarget(richSymbol.getSymbol()
-                                .getLookaheadRichSymbol());
-            }
-
-            if (rightTargetState != null && conditionTargetState != null) {
-                rightTargetProgress.add(new Pair<State, State>(
-                        rightTargetState, conditionTargetState));
-            }
-        }
-
-        if (rightTargetProgress.size() > 0) {
-            Pair<State, Set<Pair<State, State>>> targetProgress = new Pair<State, Set<Pair<State, State>>>(
-                    leftTargetState, rightTargetProgress);
-            State targetState = this.stateMap.get(targetProgress);
-            if (targetState == null) {
-                targetState = new State(this.newAutomaton);
-
-                this.stateMap.put(targetProgress, targetState);
-                this.progressMap.put(targetState, targetProgress);
-                this.workSet.add(targetState);
-            }
-            sourceState.addTransition(richSymbol, targetState);
-        }
-    }
+    
+	private void addTransition(State sourceState, RichSymbol richSymbol) {
+		Pair<State, Set<Pair<State, State>>> sourceProgress = this.progressMap
+				.get(sourceState);
+		State leftSourceState = sourceProgress.getLeft();
+		State leftTargetState;
+		
+		if (leftSourceState == null || richSymbol.isNormal()) {
+			leftTargetState = null;
+		}
+		else {
+			leftTargetState = leftSourceState.getSingleTarget(richSymbol);
+		}
+		
+		Set<Pair<State, State>> rightSourceProgress = sourceProgress.getRight();
+		Set<Pair<State, State>> rightTargetProgress = new LinkedHashSet<Pair<State, State>>();
+		
+		if (leftTargetState != null) {
+			rightTargetProgress.add(new Pair<State, State>(this.rightAutomaton
+					.getStartState(), leftTargetState));
+		}
+		
+		for (Pair<State, State> sourcePair : rightSourceProgress) {
+			
+			State rightSourceState = sourcePair.getLeft();
+			State conditionSourceState = sourcePair.getRight(); //Left Auto
+			State rightTargetState = rightSourceState.getSingleTarget(richSymbol);
+			State conditionTargetState;
+			
+			if ((richSymbol.isLookahead() && richSymbol == RichSymbol.END) || (richSymbol.isLookback() && richSymbol == RichSymbol.START)) {
+				conditionTargetState = conditionSourceState
+						.getSingleTarget(richSymbol);
+			} else {
+				
+				conditionTargetState = conditionSourceState
+						.getSingleTarget(richSymbol.getSymbol().getLookbackRichSymbol());
+				
+				rightTargetState = rightSourceState
+						.getSingleTarget(richSymbol.getSymbol().getLookbackRichSymbol());
+				
+				// B + B = B
+				if(rightTargetState != null && conditionTargetState != null && richSymbol.isLookback()){
+					rightTargetProgress.add(new Pair<State, State>(
+							rightTargetState, conditionTargetState));					
+				}
+				else {
+					conditionTargetState = conditionSourceState
+							.getSingleTarget(richSymbol.getSymbol()
+									.getNormalRichSymbol());
+				}
+				
+				// N + B = N
+				if(rightTargetState != null && conditionTargetState != null && richSymbol.isNormal()){
+					rightTargetProgress.add(new Pair<State, State>(
+							rightTargetState, conditionTargetState));		
+				}
+				else {
+					conditionTargetState = conditionSourceState
+							.getSingleTarget(richSymbol.getSymbol()
+									.getLookaheadRichSymbol());
+					
+					rightTargetState = rightSourceState
+							.getSingleTarget(richSymbol.getSymbol().getNormalRichSymbol());
+				}
+				
+				// V + N = N
+				if(rightTargetState != null && conditionTargetState != null  && richSymbol.isNormal()){
+					rightTargetProgress.add(new Pair<State, State>(
+							rightTargetState, conditionTargetState));		
+				}
+				else {				
+					rightTargetState = rightSourceState
+							.getSingleTarget(richSymbol.getSymbol().getLookaheadRichSymbol());
+				}
+				
+				// V + V = V
+				if(richSymbol.isLookahead() && rightTargetState != null && conditionTargetState != null){
+					rightTargetProgress.add(new Pair<State, State>(
+							rightTargetState, conditionTargetState));		
+				}
+					
+			}
+			if (rightTargetState != null && conditionTargetState != null && ((richSymbol.isLookahead() && richSymbol == RichSymbol.END) || (richSymbol.isLookback() && richSymbol == RichSymbol.START))) {
+				rightTargetProgress.add(new Pair<State, State>(
+						rightTargetState, conditionTargetState));
+			}
+		}
+		
+		if (rightTargetProgress.size() > 0) {
+			Pair<State, Set<Pair<State, State>>> targetProgress = new Pair<State, Set<Pair<State, State>>>(
+					leftTargetState, rightTargetProgress);
+			State targetState = this.stateMap.get(targetProgress);
+			
+			if (targetState == null) {
+				targetState = new State(this.newAutomaton);
+				this.stateMap.put(targetProgress, targetState);
+				this.progressMap.put(targetState, targetProgress);
+				this.workSet.add(targetState);
+			}
+			
+			sourceState.addTransition(richSymbol, targetState);
+		}
+	}
 
     Automaton getNewAutomaton() {
 

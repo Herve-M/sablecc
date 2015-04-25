@@ -116,7 +116,7 @@ public final class AlphabetMergeResult {
                 newLookBackRichSymbols.add(newSymbol.getLookbackRichSymbol());
             }
 
-            this.mergedAlphabetRichSymbolMap.put(oldNormalRichSymbol,
+			this.mergedAlphabetRichSymbolMap.put(oldNormalRichSymbol,
                     newNormalRichSymbols);
             this.mergedAlphabetRichSymbolMap.put(oldLookaheadRichSymbol,
                     newLookaheadRichSymbols);

@@ -175,9 +175,15 @@ public final class State
 
         if (richSymbol != null
                 && richSymbol != RichSymbol.END
+        		&& richSymbol != RichSymbol.START
                 && !this.automaton.getAlphabet().getSymbols().contains(
                         richSymbol.getSymbol())) {
             throw new InternalException("invalid symbol");
+        }
+        
+        if(richSymbol.toString().equals("{Normal,{'a'}}")){
+        	int i = 0;
+        	i++;
         }
 
         SortedSet<State> targets = this.transitions.get(richSymbol);

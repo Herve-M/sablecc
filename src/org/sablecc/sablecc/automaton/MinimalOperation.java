@@ -323,6 +323,10 @@ class MinimalOperation {
         if (newRichSymbol == null) {
             throw new InternalException("newRichSymbol may not be null");
         }
+        
+        if(newRichSymbol == RichSymbol.START) {
+        	return RichSymbol.START;
+        }
 
         if (newRichSymbol == RichSymbol.END) {
             return RichSymbol.END;
