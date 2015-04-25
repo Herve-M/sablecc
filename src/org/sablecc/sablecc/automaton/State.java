@@ -17,16 +17,21 @@
 
 package org.sablecc.sablecc.automaton;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Map;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
-import org.sablecc.exception.*;
-import org.sablecc.sablecc.alphabet.*;
+import org.sablecc.exception.InternalException;
+import org.sablecc.sablecc.alphabet.RichSymbol;
 
 /**
  * An instance of this class represents a state in a finite automaton.
  */
 public final class State
-        implements Comparable<State> {
+implements Comparable<State> {
 
     /**
      * An empty set of states.
@@ -97,8 +102,8 @@ public final class State
         this.id = automaton.getNextStateId();
         automaton.addState(this);
 
-        this.transitions = new TreeMap<RichSymbol, SortedSet<State>>(Automaton
-                .getRichSymbolComparator());
+        this.transitions = new TreeMap<RichSymbol, SortedSet<State>>(
+                Automaton.getRichSymbolComparator());
 
         this.isStable = false;
     }
@@ -144,8 +149,8 @@ public final class State
 
         if (richSymbol != null
                 && richSymbol != RichSymbol.END
-                && !this.automaton.getAlphabet().getSymbols().contains(
-                        richSymbol.getSymbol())) {
+                && !this.automaton.getAlphabet().getSymbols()
+                .contains(richSymbol.getSymbol())) {
             throw new InternalException("invalid symbol");
         }
 
@@ -175,15 +180,10 @@ public final class State
 
         if (richSymbol != null
                 && richSymbol != RichSymbol.END
-        		&& richSymbol != RichSymbol.START
-                && !this.automaton.getAlphabet().getSymbols().contains(
-                        richSymbol.getSymbol())) {
+                && richSymbol != RichSymbol.START
+                && !this.automaton.getAlphabet().getSymbols()
+                .contains(richSymbol.getSymbol())) {
             throw new InternalException("invalid symbol");
-        }
-        
-        if(richSymbol.toString().equals("{Normal,{'a'}}")){
-        	int i = 0;
-        	i++;
         }
 
         SortedSet<State> targets = this.transitions.get(richSymbol);
@@ -277,6 +277,7 @@ public final class State
     /**
      * Compares this state to the provided state.
      */
+    @Override
     public int compareTo(
             State state) {
 
@@ -333,8 +334,8 @@ public final class State
         if (richSymbol != null
                 && richSymbol != RichSymbol.END
                 && richSymbol != RichSymbol.START
-                && !this.automaton.getAlphabet().getSymbols().contains(
-                        richSymbol.getSymbol())) {
+                && !this.automaton.getAlphabet().getSymbols()
+                .contains(richSymbol.getSymbol())) {
             throw new InternalException("invalid symbol");
         }
 

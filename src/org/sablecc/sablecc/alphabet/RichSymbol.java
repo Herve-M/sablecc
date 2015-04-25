@@ -17,19 +17,19 @@
 
 package org.sablecc.sablecc.alphabet;
 
-import org.sablecc.exception.*;
+import org.sablecc.exception.InternalException;
 
 /**
  * A rich symbol is a symbol augmented with lookahead information.
  */
 public class RichSymbol
-        implements Comparable<RichSymbol> {
+implements Comparable<RichSymbol> {
 
     /**
      * The end lookahead rich symbol.
      */
     public static final RichSymbol END = new RichSymbol(ERychType.LookaHead);
-    
+
     /**
      * The end lookback rich symbol.
      */
@@ -97,15 +97,15 @@ public class RichSymbol
 
         return this.type == ERychType.LookaHead;
     }
-    
+
     public boolean isLookback() {
-    	
-    	return this.type == ERychType.LookBack;
+
+        return this.type == ERychType.LookBack;
     }
-    
+
     public boolean isNormal() {
-    	
-    	return this.type == ERychType.Normal;
+
+        return this.type == ERychType.Normal;
     }
 
     /**
@@ -145,25 +145,26 @@ public class RichSymbol
 
         if (this.hashCode == null) {
             int hashCode = this.symbol.hashCode();
-            
+
             switch (this.type) {
-			case LookBack:
-				hashCode *= 109;
-				break;
-			case Normal:
-				hashCode *= 110;
-				break;
-			case LookaHead:
-				hashCode *= 111;
-				break;
-			}
+            case LookBack:
+                hashCode *= 109;
+                break;
+            case Normal:
+                hashCode *= 110;
+                break;
+            case LookaHead:
+                hashCode *= 111;
+                break;
+            }
 
             this.hashCode = hashCode;
         }
 
         return this.hashCode;
     }
-//    
+
+    //
 
     /**
      * Returns the string representation of this rich symbol.
@@ -182,12 +183,12 @@ public class RichSymbol
                 sb.append("}");
             }
             else {
-            	if(type == ERychType.LookBack){
-            		sb.append("{"+type+",START}");
-            	}
-            	else {
-            		sb.append("{"+type+",END}");
-            	}                
+                if (this.type == ERychType.LookBack) {
+                    sb.append("{" + this.type + ",START}");
+                }
+                else {
+                    sb.append("{" + this.type + ",END}");
+                }
             }
 
             this.toString = sb.toString();
@@ -199,6 +200,7 @@ public class RichSymbol
     /**
      * Compares this rich symbol to the provided one.
      */
+    @Override
     public int compareTo(
             RichSymbol richSymbol) {
 
@@ -206,15 +208,15 @@ public class RichSymbol
             throw new InternalException("richSymbol may not be null");
         }
 
-        if(this.type != richSymbol.type){        	
-        	switch (this.type) {
-			case LookBack:	
-				return -1;
-			case Normal:
-				return richSymbol.isLookback() ? 1 : -1;
-			case LookaHead:
-				return 1;
-			} 
+        if (this.type != richSymbol.type) {
+            switch (this.type) {
+            case LookBack:
+                return -1;
+            case Normal:
+                return richSymbol.isLookback() ? 1 : -1;
+            case LookaHead:
+                return 1;
+            }
         }
 
         if (this.symbol == null) {

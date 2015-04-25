@@ -17,10 +17,13 @@
 
 package org.sablecc.sablecc.alphabet;
 
-import java.util.*;
-import java.util.Map.*;
+import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
-import org.sablecc.exception.*;
+import org.sablecc.exception.InternalException;
 
 /**
  * An instance of this class stores the result of merging two alphabets. It
@@ -104,7 +107,8 @@ public final class AlphabetMergeResult {
             RichSymbol oldNormalRichSymbol = oldSymbol.getNormalRichSymbol();
             RichSymbol oldLookaheadRichSymbol = oldSymbol
                     .getLookaheadRichSymbol();
-            RichSymbol oldLookBackRichSymbol = oldSymbol.getLookbackRichSymbol();
+            RichSymbol oldLookBackRichSymbol = oldSymbol
+                    .getLookbackRichSymbol();
 
             SortedSet<RichSymbol> newNormalRichSymbols = new TreeSet<RichSymbol>();
             SortedSet<RichSymbol> newLookaheadRichSymbols = new TreeSet<RichSymbol>();
@@ -116,21 +120,22 @@ public final class AlphabetMergeResult {
                 newLookBackRichSymbols.add(newSymbol.getLookbackRichSymbol());
             }
 
-			this.mergedAlphabetRichSymbolMap.put(oldNormalRichSymbol,
+            this.mergedAlphabetRichSymbolMap.put(oldNormalRichSymbol,
                     newNormalRichSymbols);
             this.mergedAlphabetRichSymbolMap.put(oldLookaheadRichSymbol,
                     newLookaheadRichSymbols);
-            this.mergedAlphabetRichSymbolMap.put(oldLookBackRichSymbol, 
-            		newLookBackRichSymbols);
+            this.mergedAlphabetRichSymbolMap.put(oldLookBackRichSymbol,
+                    newLookBackRichSymbols);
         }
-        
+
         SortedSet<RichSymbol> newStartRichSymbols = new TreeSet<RichSymbol>();
         newStartRichSymbols.add(RichSymbol.START);
 
         SortedSet<RichSymbol> newEndRichSymbols = new TreeSet<RichSymbol>();
         newEndRichSymbols.add(RichSymbol.END);
-        
-        this.mergedAlphabetRichSymbolMap.put(RichSymbol.START, newStartRichSymbols);
+
+        this.mergedAlphabetRichSymbolMap.put(RichSymbol.START,
+                newStartRichSymbols);
         this.mergedAlphabetRichSymbolMap.put(RichSymbol.END, newEndRichSymbols);
     }
 

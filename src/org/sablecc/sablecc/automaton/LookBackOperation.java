@@ -17,16 +17,23 @@
 
 package org.sablecc.sablecc.automaton;
 
-import java.util.*;
-import java.util.Map.*;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
-import org.sablecc.exception.*;
-import org.sablecc.sablecc.alphabet.*;
+import org.sablecc.exception.InternalException;
+import org.sablecc.sablecc.alphabet.Alphabet;
+import org.sablecc.sablecc.alphabet.AlphabetMergeResult;
+import org.sablecc.sablecc.alphabet.RichSymbol;
+import org.sablecc.sablecc.alphabet.Symbol;
 import org.sablecc.util.Pair;
 import org.sablecc.util.WorkSet;
 
 public class LookBackOperation {
-	
+
     private Alphabet newAlphabet;
 
     private Automaton newAutomaton;
@@ -42,12 +49,12 @@ public class LookBackOperation {
     private Automaton leftAutomaton;
 
     private Automaton rightAutomaton;
-	
-	public LookBackOperation(
-			Automaton leftAutomaton,
+
+    public LookBackOperation(
+            Automaton leftAutomaton,
             Automaton rightAutomaton) {
-		
-	    if (leftAutomaton == null) {
+
+        if (leftAutomaton == null) {
             throw new InternalException("leftAutomaton may not be null");
         }
 
@@ -121,7 +128,7 @@ public class LookBackOperation {
         this.newAutomaton.stabilize();
     }
 
-	private void addTransition(
+    private void addTransition(
             State sourceState,
             RichSymbol richSymbol) {
 
@@ -161,11 +168,6 @@ public class LookBackOperation {
                         .getSingleTarget(richSymbol);
             }
             else {
-                
-                if(sourceState.toString().equals("state_1") && rightSourceState.toString().equals("state_1")){
-                    int i = 0;
-                    i++;
-                }
 
                 conditionTargetState = conditionSourceState
                         .getSingleTarget(richSymbol.getSymbol()
@@ -179,7 +181,8 @@ public class LookBackOperation {
                         && richSymbol.isLookback()) {
                     rightTargetProgress.add(new Pair<State, State>(
                             rightTargetState, conditionTargetState));
-                    loobBackRichSymbol = richSymbol.getSymbol().getLookbackRichSymbol();
+                    loobBackRichSymbol = richSymbol.getSymbol()
+                            .getLookbackRichSymbol();
                 }
                 else {
                     conditionTargetState = conditionSourceState
@@ -192,7 +195,8 @@ public class LookBackOperation {
                         && richSymbol.isNormal()) {
                     rightTargetProgress.add(new Pair<State, State>(
                             rightTargetState, conditionTargetState));
-                    loobBackRichSymbol = richSymbol.getSymbol().getLookbackRichSymbol();
+                    loobBackRichSymbol = richSymbol.getSymbol()
+                            .getLookbackRichSymbol();
                 }
                 else {
                     conditionTargetState = conditionSourceState
@@ -209,7 +213,8 @@ public class LookBackOperation {
                         && richSymbol.isLookahead()) {
                     rightTargetProgress.add(new Pair<State, State>(
                             rightTargetState, conditionTargetState));
-                    loobBackRichSymbol = richSymbol.getSymbol().getNormalRichSymbol();
+                    loobBackRichSymbol = richSymbol.getSymbol()
+                            .getNormalRichSymbol();
                 }
                 else {
                     rightTargetState = rightSourceState
@@ -229,7 +234,7 @@ public class LookBackOperation {
                     && conditionTargetState != null
                     && (richSymbol.isLookahead()
                             && richSymbol == RichSymbol.END || richSymbol
-                    .isLookback() && richSymbol == RichSymbol.START)) {
+                            .isLookback() && richSymbol == RichSymbol.START)) {
                 rightTargetProgress.add(new Pair<State, State>(
                         rightTargetState, conditionTargetState));
             }
@@ -246,18 +251,19 @@ public class LookBackOperation {
                 this.progressMap.put(targetState, targetProgress);
                 this.workSet.add(targetState);
             }
-            
-            if(loobBackRichSymbol == null)
+
+            if (loobBackRichSymbol == null) {
                 sourceState.addTransition(richSymbol, targetState);
+            }
             else {
                 sourceState.addTransition(loobBackRichSymbol, targetState);
                 loobBackRichSymbol = null;
             }
-                
+
         }
     }
-	
-	Automaton getNewAutomaton() {
+
+    Automaton getNewAutomaton() {
 
         return this.newAutomaton;
     }
