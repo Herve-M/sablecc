@@ -22,28 +22,240 @@ import java.util.Map.*;
 
 import org.sablecc.exception.*;
 import org.sablecc.sablecc.alphabet.*;
+import org.sablecc.util.Pair;
+import org.sablecc.util.WorkSet;
 
 public class LookBackOperation {
 	
-	private Automaton newAutomaton;
+    private Alphabet newAlphabet;
+
+    private Automaton newAutomaton;
+
+    private Map<Pair<State, Set<Pair<State, State>>>, State> stateMap = new HashMap<Pair<State, Set<Pair<State, State>>>, State>();
+
+    private SortedMap<State, Pair<State, Set<Pair<State, State>>>> progressMap = new TreeMap<State, Pair<State, Set<Pair<State, State>>>>();
+
+    private WorkSet<State> workSet;
+
+    private AlphabetMergeResult alphabetMergeResult;
+
+    private Automaton leftAutomaton;
+
+    private Automaton rightAutomaton;
 	
 	public LookBackOperation(
 			Automaton leftAutomaton,
             Automaton rightAutomaton) {
 		
-		if (leftAutomaton == null) {
+	    if (leftAutomaton == null) {
             throw new InternalException("leftAutomaton may not be null");
         }
 
         if (rightAutomaton == null) {
             throw new InternalException("rightAutomaton may not be null");
         }
-	}
-	
-	private Automaton getLookBackAutomation(
-			Automaton normalAutomaton){
-		return normalAutomaton;
-	}
+
+        if (leftAutomaton.hasCustomAcceptations()) {
+            throw new InternalException("invalid operation");
+        }
+
+        if (rightAutomaton.hasCustomAcceptations()) {
+            throw new InternalException("invalid operation");
+        }
+
+        if (leftAutomaton.hasMarkers()) {
+            throw new InternalException("invalid operation");
+        }
+
+        if (rightAutomaton.hasMarkers()) {
+            throw new InternalException("invalid operation");
+        }
+
+        // TODO : change to minimal when it's ready for 3 colors auto.
+        leftAutomaton = leftAutomaton.deterministic();
+        rightAutomaton = rightAutomaton.deterministic();
+
+        this.alphabetMergeResult = leftAutomaton.getAlphabet().mergeWith(
+                rightAutomaton.getAlphabet());
+        this.newAlphabet = this.alphabetMergeResult.getNewAlphabet();
+        this.newAutomaton = new Automaton(this.newAlphabet);
+
+        this.leftAutomaton = leftAutomaton
+                .withMergedAlphabet(this.alphabetMergeResult);
+        this.rightAutomaton = rightAutomaton
+                .withMergedAlphabet(this.alphabetMergeResult);
+
+        this.newAutomaton.addAcceptation(Acceptation.ACCEPT);
+
+        Set<Pair<State, State>> rightProgress = new LinkedHashSet<Pair<State, State>>();
+        rightProgress.add(new Pair<State, State>(this.rightAutomaton
+                .getStartState(), this.leftAutomaton.getStartState()));
+        Pair<State, Set<Pair<State, State>>> progress = new Pair<State, Set<Pair<State, State>>>(
+                this.leftAutomaton.getStartState(), rightProgress);
+
+        this.workSet = new WorkSet<State>();
+        this.stateMap.put(progress, this.newAutomaton.getStartState());
+        this.progressMap.put(this.newAutomaton.getStartState(), progress);
+        this.workSet.add(this.newAutomaton.getStartState());
+
+        while (this.workSet.hasNext()) {
+            State state = this.workSet.next();
+
+            for (Pair<State, State> rightProgressPair : this.progressMap.get(
+                    state).getRight()) {
+                if (rightProgressPair.getLeft().isAcceptState()
+                        && rightProgressPair.getRight().isAcceptState()) {
+                    state.addAcceptation(Acceptation.ACCEPT);
+                    break;
+                }
+            }
+            addTransition(state, RichSymbol.START);
+            for (Symbol symbol : this.newAlphabet.getSymbols()) {
+                addTransition(state, symbol.getLookbackRichSymbol());
+                addTransition(state, symbol.getNormalRichSymbol());
+                addTransition(state, symbol.getLookaheadRichSymbol());
+            }
+            addTransition(state, RichSymbol.END);
+        }
+
+        this.newAutomaton.stabilize();
+    }
+
+	private void addTransition(
+            State sourceState,
+            RichSymbol richSymbol) {
+
+        Pair<State, Set<Pair<State, State>>> sourceProgress = this.progressMap
+                .get(sourceState);
+        State leftSourceState = sourceProgress.getLeft();
+        State leftTargetState;
+        RichSymbol loobBackRichSymbol = null;
+
+        if (leftSourceState == null || richSymbol.isNormal()) {
+            leftTargetState = null;
+        }
+        else {
+            leftTargetState = leftSourceState.getSingleTarget(richSymbol);
+        }
+
+        Set<Pair<State, State>> rightSourceProgress = sourceProgress.getRight();
+        Set<Pair<State, State>> rightTargetProgress = new LinkedHashSet<Pair<State, State>>();
+
+        if (leftTargetState != null) {
+            rightTargetProgress.add(new Pair<State, State>(this.rightAutomaton
+                    .getStartState(), leftTargetState));
+        }
+
+        for (Pair<State, State> sourcePair : rightSourceProgress) {
+
+            State rightSourceState = sourcePair.getLeft();
+            State conditionSourceState = sourcePair.getRight(); // Left Auto
+            State rightTargetState = rightSourceState
+                    .getSingleTarget(richSymbol);
+            State conditionTargetState;
+
+            if (richSymbol.isLookahead() && richSymbol == RichSymbol.END
+                    || richSymbol.isLookback()
+                    && richSymbol == RichSymbol.START) {
+                conditionTargetState = conditionSourceState
+                        .getSingleTarget(richSymbol);
+            }
+            else {
+                
+                if(sourceState.toString().equals("state_1") && rightSourceState.toString().equals("state_1")){
+                    int i = 0;
+                    i++;
+                }
+
+                conditionTargetState = conditionSourceState
+                        .getSingleTarget(richSymbol.getSymbol()
+                                .getLookbackRichSymbol());
+
+                rightTargetState = rightSourceState.getSingleTarget(richSymbol
+                        .getSymbol().getLookbackRichSymbol());
+
+                // B + B = B
+                if (rightTargetState != null && conditionTargetState != null
+                        && richSymbol.isLookback()) {
+                    rightTargetProgress.add(new Pair<State, State>(
+                            rightTargetState, conditionTargetState));
+                    loobBackRichSymbol = richSymbol.getSymbol().getLookbackRichSymbol();
+                }
+                else {
+                    conditionTargetState = conditionSourceState
+                            .getSingleTarget(richSymbol.getSymbol()
+                                    .getNormalRichSymbol());
+                }
+
+                // N + B = B
+                if (rightTargetState != null && conditionTargetState != null
+                        && richSymbol.isNormal()) {
+                    rightTargetProgress.add(new Pair<State, State>(
+                            rightTargetState, conditionTargetState));
+                    loobBackRichSymbol = richSymbol.getSymbol().getLookbackRichSymbol();
+                }
+                else {
+                    conditionTargetState = conditionSourceState
+                            .getSingleTarget(richSymbol.getSymbol()
+                                    .getLookaheadRichSymbol());
+
+                    rightTargetState = rightSourceState
+                            .getSingleTarget(richSymbol.getSymbol()
+                                    .getNormalRichSymbol());
+                }
+
+                // V + N = N
+                if (rightTargetState != null && conditionTargetState != null
+                        && richSymbol.isLookahead()) {
+                    rightTargetProgress.add(new Pair<State, State>(
+                            rightTargetState, conditionTargetState));
+                    loobBackRichSymbol = richSymbol.getSymbol().getNormalRichSymbol();
+                }
+                else {
+                    rightTargetState = rightSourceState
+                            .getSingleTarget(richSymbol.getSymbol()
+                                    .getLookaheadRichSymbol());
+                }
+
+                // V + V = V
+                if (richSymbol.isLookahead() && rightTargetState != null
+                        && conditionTargetState != null) {
+                    rightTargetProgress.add(new Pair<State, State>(
+                            rightTargetState, conditionTargetState));
+                }
+
+            }
+            if (rightTargetState != null
+                    && conditionTargetState != null
+                    && (richSymbol.isLookahead()
+                            && richSymbol == RichSymbol.END || richSymbol
+                    .isLookback() && richSymbol == RichSymbol.START)) {
+                rightTargetProgress.add(new Pair<State, State>(
+                        rightTargetState, conditionTargetState));
+            }
+        }
+
+        if (rightTargetProgress.size() > 0) {
+            Pair<State, Set<Pair<State, State>>> targetProgress = new Pair<State, Set<Pair<State, State>>>(
+                    leftTargetState, rightTargetProgress);
+            State targetState = this.stateMap.get(targetProgress);
+
+            if (targetState == null) {
+                targetState = new State(this.newAutomaton);
+                this.stateMap.put(targetProgress, targetState);
+                this.progressMap.put(targetState, targetProgress);
+                this.workSet.add(targetState);
+            }
+            
+            if(loobBackRichSymbol == null)
+                sourceState.addTransition(richSymbol, targetState);
+            else {
+                sourceState.addTransition(loobBackRichSymbol, targetState);
+                loobBackRichSymbol = null;
+            }
+                
+        }
+    }
 	
 	Automaton getNewAutomaton() {
 
